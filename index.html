@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Is It Friday Yet?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: system-ui, -apple-system, sans-serif;
+            transition: background-color 0.5s ease;
+            overflow: hidden;
+        }
+
+        /* Day-based backgrounds */
+        .monday { background: linear-gradient(135deg, #2c2c2c 0%, #4a4a4a 100%); }
+        .tuesday { background: linear-gradient(135deg, #3d4a5d 0%, #5a6d7e 100%); }
+        .wednesday { background: linear-gradient(135deg, #4a5d4a 0%, #6d8a6d 100%); }
+        .thursday { background: linear-gradient(135deg, #7a6d4a 0%, #c4a84d 100%); }
+        .friday {
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%);
+            animation: disco 2s ease-in-out infinite;
+        }
+
+        @keyframes disco {
+            0% { background: linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%); }
+            25% { background: linear-gradient(135deg, #feca57 0%, #48dbfb 50%, #ff9ff3 100%); }
+            50% { background: linear-gradient(135deg, #48dbfb 0%, #ff9ff3 50%, #5f27cd 100%); }
+            75% { background: linear-gradient(135deg, #ff9ff3 0%, #5f27cd 50%, #ff6b6b 100%); }
+            100% { background: linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%); }
+        }
+        .saturday { background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%); }
+        .sunday { background: linear-gradient(135deg, #636e72 0%, #b2bec3 100%); }
+
+        .container {
+            text-align: center;
+            z-index: 10;
+        }
+
+        .answer {
+            font-size: clamp(5rem, 20vw, 15rem);
+            font-weight: 900;
+            color: white;
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+            animation: pulse 2s ease-in-out infinite;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        .answer:hover {
+            transform: scale(1.05);
+        }
+
+        .answer:active {
+            transform: scale(0.98);
+        }
+
+        .answer.yes {
+            animation: bounce 0.5s ease-in-out infinite, rainbow 2s linear infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes rainbow {
+            0% { color: #ff6b6b; }
+            25% { color: #feca57; }
+            50% { color: #48dbfb; }
+            75% { color: #ff9ff3; }
+            100% { color: #ff6b6b; }
+        }
+
+        .subtext {
+            font-size: clamp(1rem, 3vw, 2rem);
+            color: rgba(255,255,255,0.8);
+            margin-top: 1rem;
+        }
+
+        .countdown {
+            margin-top: 2rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .countdown-label {
+            font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            opacity: 0.7;
+            margin-bottom: 0.5rem;
+        }
+
+        .countdown-units {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .countdown-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 60px;
+        }
+
+        .countdown-number {
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .countdown-unit-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.6;
+            margin-top: 0.25rem;
+        }
+
+        .friday-message {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: white;
+            margin-top: 1rem;
+            animation: glow 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+            to { text-shadow: 0 0 30px rgba(255,255,255,0.9); }
+        }
+
+        .emoji {
+            font-size: clamp(3rem, 10vw, 6rem);
+            margin-top: 1rem;
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            top: -20px;
+            animation: fall linear forwards;
+            pointer-events: none;
+        }
+
+        .confetti.big {
+            width: 25px;
+            height: 25px;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+            }
+        }
+
+        .sound-btn {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .sound-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255,255,255,0.3);
+        }
+
+        .click-hint {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.4);
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .progress-track {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: rgba(255,255,255,0.6);
+            transition: width 0.3s ease;
+        }
+
+        .header {
+            position: fixed;
+            top: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cat {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.8);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .bubble {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .bubble::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 6px solid transparent;
+            border-right-color: rgba(255,255,255,0.9);
+        }
+
+        .tagline {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img class="cat" src="LILA.JPG" alt="Lila">
+        <div class="bubble"><em>Is it Friday?</em></div>
+    </div>
+
+    <div class="container">
+        <h1 class="answer" id="answer" onclick="playSound()"></h1>
+        <p class="subtext" id="subtext"></p>
+        <div class="emoji" id="emoji"></div>
+        <div class="countdown" id="countdown"></div>
+    </div>
+
+    <button class="sound-btn" id="soundBtn" onclick="toggleSound()">🔊</button>
+    <div class="click-hint">tap for sound</div>
+    <div class="tagline">Created @ Lila Jane Studios</div>
+
+    <div class="progress-track">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <script>
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const today = new Date().getDay();
+        const dayName = days[today];
+
+        document.body.classList.add(dayName);
+
+        const answerEl = document.getElementById('answer');
+        const subtextEl = document.getElementById('subtext');
+        const emojiEl = document.getElementById('emoji');
+        const countdownEl = document.getElementById('countdown');
+        const progressBar = document.getElementById('progressBar');
+
+        const responses = {
+            monday: {
+                answer: 'NO',
+                subtext: "It's Monday. We don't talk about Monday.",
+                emoji: '💀',
+                sound: 'sad'
+            },
+            tuesday: {
+                answer: 'NO',
+                subtext: "Tuesday: Not Friday.",
+                emoji: '😐',
+                sound: 'meh'
+            },
+            wednesday: {
+                answer: 'NO',
+                subtext: "Hump day! The awkward middle child of the week.",
+                emoji: '🐪',
+                sound: 'medium'
+            },
+            thursday: {
+                answer: 'NO',
+                subtext: 'SO CLOSE! Friday Eve is upon us! 🙏',
+                emoji: '🔥',
+                sound: 'hopeful'
+            },
+            friday: {
+                answer: 'YES!',
+                subtext: "LET'S GOOOOO! 🎉🎊🥳",
+                emoji: '🎉',
+                sound: 'party'
+            },
+            saturday: {
+                answer: 'BETTER',
+                subtext: "Saturday: Even Better Than Friday.",
+                emoji: '😎',
+                sound: 'chill'
+            },
+            sunday: {
+                answer: 'ALMOST',
+                subtext: 'Sunday scaries loading...',
+                emoji: '😅',
+                sound: 'ominous'
+            }
+        };
+
+        // Initialize display
+        const data = responses[dayName];
+        answerEl.textContent = data.answer;
+        subtextEl.textContent = data.subtext;
+        emojiEl.textContent = data.emoji;
+
+        if (dayName === 'friday') {
+            answerEl.classList.add('yes');
+        }
+
+        // ========== SOUND SYSTEM ==========
+        let soundEnabled = true;
+        let audioContext = null;
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioContext;
+        }
+
+        function playTone(frequency, type, duration, volume = 0.3) {
+            const ctx = initAudio();
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+
+            gainNode.gain.setValueAtTime(volume, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+
+            oscillator.start(ctx.currentTime);
+            oscillator.stop(ctx.currentTime + duration);
+        }
+
+        function playSadTrombone() {
+            const notes = [293.66, 277.18, 261.63, 246.94]; // D4, C#4, C4, B3
+            notes.forEach((freq, i) => {
+                setTimeout(() => playTone(freq, 'sawtooth', 0.5, 0.2), i * 300);
+            });
+        }
+
+        function playMehSound() {
+            playTone(200, 'triangle', 0.8, 0.2);
+        }
+
+        function playMediumSound() {
+            const notes = [262, 294, 330]; // C, D, E
+            notes.forEach((freq, i) => {
+                setTimeout(() => playTone(freq, 'sine', 0.3), i * 150);
+            });
+        }
+
+        function playHopefulSound() {
+            const notes = [330, 392, 440, 523]; // E, G, A, C5
+            notes.forEach((freq, i) => {
+                setTimeout(() => playTone(freq, 'sine', 0.25), i * 100);
+            });
+        }
+
+        function playPartySound() {
+            const notes = [523, 659, 784, 1047, 784, 659, 523]; // C5 major arpeggio up and down
+            notes.forEach((freq, i) => {
+                setTimeout(() => playTone(freq, 'sine', 0.2, 0.25), i * 80);
+            });
+            // Add some sparkle
+            setTimeout(() => playTone(1319, 'sine', 0.3, 0.15), 600);
+        }
+
+        function playChillSound() {
+            const notes = [392, 494, 587]; // G, B, D (major chord)
+            notes.forEach((freq, i) => {
+                setTimeout(() => playTone(freq, 'sine', 0.6, 0.15), i * 50);
+            });
+        }
+
+        function playOminousSound() {
+            const notes = [196, 185, 175]; // Low descending
+            notes.forEach((freq, i) => {
+                setTimeout(() => playTone(freq, 'sawtooth', 0.6, 0.15), i * 200);
+            });
+        }
+
+        function playSound() {
+            if (!soundEnabled) return;
+
+            switch(data.sound) {
+                case 'sad': playSadTrombone(); break;
+                case 'meh': playMehSound(); break;
+                case 'medium': playMediumSound(); break;
+                case 'hopeful': playHopefulSound(); break;
+                case 'party': playPartySound(); createConfettiBurst(); break;
+                case 'chill': playChillSound(); break;
+                case 'ominous': playOminousSound(); break;
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+        }
+
+        // ========== COUNTDOWN SYSTEM ==========
+        function getTimeUntilFriday() {
+            const now = new Date();
+            const dayOfWeek = now.getDay();
+
+            if (dayOfWeek === 5) return null; // It's Friday!
+
+            let daysUntilFriday;
+            if (dayOfWeek === 6) daysUntilFriday = 6;
+            else if (dayOfWeek === 0) daysUntilFriday = 5;
+            else daysUntilFriday = 5 - dayOfWeek;
+
+            const nextFriday = new Date(now);
+            nextFriday.setDate(now.getDate() + daysUntilFriday);
+            nextFriday.setHours(0, 0, 0, 0);
+
+            const diff = nextFriday - now;
+
+            return {
+                days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+                hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+                seconds: Math.floor((diff % (1000 * 60)) / 1000)
+            };
+        }
+
+        function updateCountdown() {
+            const time = getTimeUntilFriday();
+
+            if (!time) {
+                countdownEl.innerHTML = '<div class="friday-message">🎉 PARTY ALL DAY 🎉</div>';
+                return;
+            }
+
+            countdownEl.innerHTML = `
+                <div class="countdown-label">Time until Friday</div>
+                <div class="countdown-units">
+                    <div class="countdown-unit">
+                        <div class="countdown-number">${time.days}</div>
+                        <div class="countdown-unit-label">days</div>
+                    </div>
+                    <div class="countdown-unit">
+                        <div class="countdown-number">${time.hours}</div>
+                        <div class="countdown-unit-label">hours</div>
+                    </div>
+                    <div class="countdown-unit">
+                        <div class="countdown-number">${time.minutes}</div>
+                        <div class="countdown-unit-label">min</div>
+                    </div>
+                    <div class="countdown-unit">
+                        <div class="countdown-number">${time.seconds}</div>
+                        <div class="countdown-unit-label">sec</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update countdown every second
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        // ========== PROGRESS BAR ==========
+        function updateProgress() {
+            // Progress through work week (Mon=1 to Fri=5)
+            let progress = 0;
+            if (today >= 1 && today <= 5) {
+                progress = ((today - 1) / 4) * 100;
+            } else {
+                progress = 100; // Weekend
+            }
+            progressBar.style.width = progress + '%';
+        }
+        updateProgress();
+
+        // ========== CONFETTI ==========
+        const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd'];
+
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+            document.body.appendChild(confetti);
+            setTimeout(() => confetti.remove(), 4000);
+        }
+
+        function createConfettiBurst() {
+            for (let i = 0; i < 80; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti' + (Math.random() > 0.7 ? ' big' : '');
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 30);
+            }
+        }
+
+        // Auto-confetti on Friday
+        if (dayName === 'friday') {
+            setInterval(createConfetti, 150);
+            createConfettiBurst();
+            // Auto-play sound on Friday after a short delay
+            setTimeout(() => {
+                if (soundEnabled) playPartySound();
+            }, 500);
+        }
+    </script>
+</body>
+</html>
